@@ -1,0 +1,23 @@
+# Framework Web
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-dotenv>=1.0.0
+
+# HTTP Client (async)
+httpx>=0.25.0
+aiohttp>=3.9.0
+
+# Google Gemini AI
+google-generativeai>=0.3.0
+
+# NLP - Transformers
+transformers>=4.35.0
+torch>=2.0.0
+sentencepiece>=0.1.99
+
+# Validation
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Utilities
+python-jose>=3.3.0
