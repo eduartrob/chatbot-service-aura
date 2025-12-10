@@ -1,12 +1,12 @@
 # app/services/gemini_client.py
 """
-Cliente para Google Gemini API.
+Cliente para Groq API (reemplaza Gemini).
 
 Genera respuestas empáticas y contextualizadas basadas en el perfil
-psicoemocional del usuario.
+psicoemocional del usuario usando Llama 3.
 """
 
-import google.generativeai as genai
+from groq import Groq
 from typing import Optional
 from dataclasses import dataclass
 
@@ -105,29 +105,16 @@ No tienes que enfrentar esto solo/a. Hay personas capacitadas esperando para esc
 
 class GeminiClient:
     """
-    Cliente para generación de respuestas con Gemini.
+    Cliente para generación de respuestas con Groq/Llama.
     
     Configura el modelo con el contexto psicoemocional del usuario
     para generar respuestas empáticas y apropiadas.
     """
     
     def __init__(self):
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        
-        self.model = genai.GenerativeModel(
-            model_name=settings.GEMINI_MODEL,
-            generation_config={
-                "temperature": settings.GEMINI_TEMPERATURE,
-                "max_output_tokens": settings.GEMINI_MAX_TOKENS,
-                "top_p": 0.9,
-            },
-            safety_settings={
-                "HARM_CATEGORY_HARASSMENT": "BLOCK_ONLY_HIGH",
-                "HARM_CATEGORY_HATE_SPEECH": "BLOCK_ONLY_HIGH",
-                "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_ONLY_HIGH",
-                "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_ONLY_HIGH",
-            }
-        )
+        self.client = Groq(api_key=settings.GROQ_API_KEY)
+        self.model = settings.GROQ_MODEL
+        print(f"   ✅ Cliente Groq configurado con modelo {self.model}")
     
     async def generate_response(self, context: UserContext) -> ChatResponse:
         """
@@ -155,13 +142,18 @@ class GeminiClient:
                 user_context=context.build_system_prompt_context()
             )
             
-            # Generar respuesta
-            chat = self.model.start_chat(history=[])
+            # Generar respuesta con Groq
+            chat_completion = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": context.prompt}
+                ],
+                model=self.model,
+                temperature=settings.GROQ_TEMPERATURE,
+                max_tokens=settings.GROQ_MAX_TOKENS,
+            )
             
-            # Enviar el system prompt como contexto inicial
-            full_prompt = f"{system_prompt}\n\nMensaje del usuario: {context.prompt}"
-            
-            response = await chat.send_message_async(full_prompt)
+            response_text = chat_completion.choices[0].message.content
             
             # Determinar si requiere seguimiento
             requires_follow_up = (
@@ -170,7 +162,7 @@ class GeminiClient:
             )
             
             return ChatResponse(
-                message=response.text,
+                message=response_text,
                 intent_detected=context.intent_result.intent.value,
                 risk_level=context.overall_risk_level,
                 requires_follow_up=requires_follow_up,
@@ -178,7 +170,7 @@ class GeminiClient:
             )
             
         except Exception as e:
-            print(f"❌ Error generando respuesta con Gemini: {e}")
+            print(f"❌ Error generando respuesta con Groq: {e}")
             
             # Respuesta de fallback
             return ChatResponse(
@@ -210,7 +202,7 @@ _client: Optional[GeminiClient] = None
 
 
 def get_gemini_client() -> GeminiClient:
-    """Obtiene la instancia global del cliente de Gemini."""
+    """Obtiene la instancia global del cliente de Groq."""
     global _client
     if _client is None:
         _client = GeminiClient()

@@ -13,11 +13,11 @@ class Settings(BaseSettings):
     SERVICE_PORT: int = 8002
     DEBUG: bool = False
     
-    # Google Gemini
-    GEMINI_API_KEY: str
-    GEMINI_MODEL: str = "gemini-2.0-flash"
-    GEMINI_TEMPERATURE: float = 0.7
-    GEMINI_MAX_TOKENS: int = 500
+    # Groq AI (replaces Gemini)
+    GROQ_API_KEY: str
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
+    GROQ_TEMPERATURE: float = 0.7
+    GROQ_MAX_TOKENS: int = 500
     
     # Clustering Service
     CLUSTERING_SERVICE_URL: str = "http://localhost:8001"
