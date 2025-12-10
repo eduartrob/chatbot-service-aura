@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     
     # Google Gemini
     GEMINI_API_KEY: str
-    GEMINI_MODEL: str = "gemini-1.5-flash-latest"
+    GEMINI_MODEL: str = "gemini-2.0-flash"
     GEMINI_TEMPERATURE: float = 0.7
     GEMINI_MAX_TOKENS: int = 500
     
